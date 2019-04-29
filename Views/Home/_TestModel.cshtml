@@ -1,0 +1,42 @@
+﻿@using System.Web.Mvc.Html
+@using NBayes.Models
+<h3>Test Model</h3>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="row">
+        <div class="col-md-3">
+            @Html.DropDownList("ddlEducation", (SelectList)ViewBag.ddlEducation, new { data_bind = "value: EducationVM" })
+        </div>
+        <div class="col-md-3">
+            @Html.DropDownList("ddlAge", (SelectList)ViewBag.ddlAge, new { data_bind = "value: AgeVM" })
+        </div>
+        <div class="col-md-3">
+            @Html.DropDownList("ddlSex", (SelectList)ViewBag.ddlSex, new { data_bind = "value: SexVM" })
+        </div>
+
+        <div class="col-md-3">
+            @Html.DropDownList("ddlAcceptence", (SelectList)ViewBag.ddlAcceptence, new { data_bind = "value: AcceptenceVM" })
+        </div>
+    </div>
+    <hr />
+    <br />
+    <div class="row">
+        <div class="col-md-3">
+            @Html.Label("Persist data")
+            @Html.CheckBox("chkAdd", new { data_bind = "checked: PersistData" })
+        </div>
+        <div class="col-md-3">
+            @Html.Label("Use prediction")
+            @Html.CheckBox("chkPred", new { data_bind = "checked: UsePrediction" })
+        </div>
+        <div class="col-md-3">
+            <input type="button" value="Test Aceptence" class="btn btn-default" name="btnSave" data-bind="click:Save" />
+        </div>
+        <div class="col-md-3">
+            <span><b>PredictedResult <span data-bind="text:Result"  id="spnResult" class="label label-info"></span></b></span>
+        </div>
+    </div>
+}
+<hr />

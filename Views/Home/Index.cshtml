@@ -1,0 +1,127 @@
+﻿@{
+    ViewBag.Title = "NB Classifier";
+}
+
+<div class="jumbotron">
+    <h2>Staff Accepter</h2>
+    <p>You can find something in this page, like:</p>
+    <ul>
+        <li>Listing all training raw data included input and target variables</li>
+        <li>Listing all conditional probabilities of input variables to target variable depends on training data</li>
+        <li>You can calculate acceptence of a person selecting features</li>
+        <li>You can persist a new person to database and update learning by checking Persist data option</li>
+        <li>You can use prediction or your selection checking Use prediction option</li>
+        <li>You can show result of current person in the Prediction result section</li>
+    </ul>
+</div>
+@Html.Action("_TestModel")
+@Html.Partial("_GetPeople")
+@Html.Partial("_GetProbabilities")
+
+
+@section scripts {
+    <script>
+
+        Person = function (education, age, sex, acceptence) {
+            var self = this;
+            self.Education = ko.observable(education);
+            self.Age = ko.observable(age);
+            self.Sex = ko.observable(sex);
+            self.Acceptence = ko.observable(acceptence);
+        };
+
+        Probability = function(varName, levelName, levelYCnt, levelYProb, levelYAdjProb, levelNCnt, levelNProb, levelNAdjProb) {
+            var self = this;
+            self.VarName = ko.observable(varName);
+            self.LevelName = ko.observable(levelName);
+            self.LevelYCnt = ko.observable(levelYCnt);
+            self.LevelYProb = ko.observable(levelYProb);
+            self.LevelYAdjProb = ko.observable(levelYAdjProb);
+            self.LevelNCnt = ko.observable(levelNCnt);
+            self.LevelNProb = ko.observable(levelNProb);
+            self.LevelNAdjProb = ko.observable(levelNAdjProb);
+
+        }
+
+        NBModelVM = function () {
+            var self = this;
+            this.EducationVM = ko.observable();
+            this.SexVM = ko.observable();
+            this.AgeVM = ko.observable();
+            this.AcceptenceVM = ko.observable();
+            this.PersistData = ko.observable();
+            this.UsePrediction = ko.observable();
+            this.Result = ko.observable("None");
+
+            var getPeople = function () {
+                self.People.removeAll();
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("GetAllPeople", "Home")',
+                    success: function (data) {
+                        $.each(data, function (key, element) {
+                            var person = new Person(
+                                element.Education,
+                                element.Age,
+                                element.Sex,
+                                element.Acceptence);
+                            self.People.push(person);
+                        });
+                    }
+                });
+            }
+
+            var getProbabilities= function () {
+                self.Probabilities.removeAll();
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("GetAllProbabilities", "Home")',
+                    success: function (data) {
+                        $.each(data, function (key, element) {
+                            var probability = new Probability(
+                                element.VarName,
+                                element.LevelName,
+                                element.LevelYCnt,
+                                element.LevelYProbStr,
+                                element.LevelYAdjProbStr,
+                                element.LevelNCnt,
+                                element.LevelNProbStr,
+                                element.LevelNAdjProbStr);
+                            self.Probabilities.push(probability);
+                        });
+                    }
+                });
+            }
+
+            this.Save = function() {
+                $.ajax({
+                    url: '@Url.Action("AddToModel", "Home")',
+                    type: "post",
+                    dataType: "json",
+                    data: ko.toJSON(this),
+                    contentType: "application/json",
+                    success: function(result) {
+                        if (result == "Yes") {
+                            $("#spnResult").removeClass();
+                            $("#spnResult").addClass("label label-success");
+                        } else {
+                            $("#spnResult").removeClass();
+                            $("#spnResult").addClass("label label-danger");
+                        }
+                        self.Result(result);
+                        getPeople();
+                        getProbabilities();
+                    }
+                });
+            }
+
+            self.People = ko.observableArray([]);
+            self.Probabilities = ko.observableArray([]);
+            getPeople();
+            getProbabilities();
+        };
+
+        ko.applyBindings(new NBModelVM());
+    </script>
+}
+
